@@ -202,7 +202,9 @@
                             try {
                                 if (data.status == "failed") {
                                     this.error = "Failed to get organizations, maybe check your token and/or sketch id and user id";
-                                }
+                                }else{
+this.organizations = data;
+}
                             }
                             catch (err) {
                                 this.organizations = data;
@@ -218,6 +220,9 @@
                                 if(data.status == "failed") {
                                     this.error = "Failed to get organization details, maybe check your token and/or sketch id and user id";
                                 }
+else {
+this.organization = data;
+}
                             }
                             catch(err) {
                                 this.organization = data;
@@ -233,7 +238,9 @@
                             try {
                                 if(data.status == "failed") {
                                     this.error = "Failed to get organization boards, maybe check your token and/or sketch id and user id";
-                                }
+                                }else{
+this.boards = data;
+}
                             }
                             catch(err) {
                                 this.boards = data;
@@ -257,6 +264,9 @@
                                 if(data.status == "failed") {
                                     this.error = "Failed to select board, maybe check your token and/or sketch id and user id";
                                 }
+else {
+this.message_2 = data;
+}
                             }
                             catch(err) {
                                 this.message_2 = data;
@@ -272,7 +282,9 @@
                             try {
                                 if(data.status == "failed") {
                                     this.error = "Failed to get board lists, maybe check your token and/or sketch id and user id";
-                                }
+                                }else{
+this.lists = data;
+}
                             }
                             catch(err) {
                                 this.lists = data;
@@ -289,6 +301,9 @@
                                 if(data.status == "failed") {
                                     this.error = "Failed to get board cards, maybe check your token and/or sketch id and user id";
                                 }
+else {
+this.cards = data;
+}
                             }
                             catch(err) {
                                 this.cards = data;
@@ -313,6 +328,9 @@
                                 if(data.status == "failed") {
                                     this.error = "Failed to create card, maybe check your token and/or sketch id and user id";
                                 }
+else {
+this.message_3 = data;
+}
                             }
                             catch(err) {
                                 this.message_3 = data;
@@ -329,6 +347,9 @@
                                 if(data.status == "failed") {
                                     this.error = "Failed to search cards, maybe check your token and/or sketch id and user id";
                                 }
+else {
+this.searched_cards = data.cards;
+}
                             }
                             catch(err) {
                                 this.searched_cards = data.cards;
