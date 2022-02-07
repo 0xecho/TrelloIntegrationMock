@@ -1,0 +1,276 @@
+<!-- init html and load vue -->
+<html lang="en">
+    <head>
+        <title>Invision Demo App</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    </head>
+    <body>
+        <div id="app">
+            <div style="text-align:center;">
+                <!-- css centered header of 7 links -->
+                <div style="text-align:center;">
+                    <a @click="page_num = 1" href="#">Authorize Trello</a> | 
+                    <a @click="page_num = 2" href="#">Get organizations</a> |
+                    <a @click="page_num = 3" href="#">Organization Details</a> |
+                    <a @click="page_num = 4" href="#">Organization Boards</a> |
+                    <a @click="page_num = 5" href="#">Select Board</a> |
+                    <a @click="page_num = 6" href="#">Board Lists (Cols)</a> |
+                    <a @click="page_num = 7" href="#">Board Cards (Issues)</a> |
+                    <a @click="page_num = 8" href="#">Create Card (Issue)</a> |
+                    <a @click="page_num = 9" href="#">Search Cards</a> 
+                </div>
+                <hr>
+                <div v-if="page_num == 1">
+                    <small>
+                        Head to <a href="https://trello.com/1/authorize?expiration=never&scope=read,write,account&response_type=token&name=Server%20Token&key=d61396d6f8b46b6f2e883932d79835eb" target="_blank" rel="noopener noreferrer">Trello Auth</a>, allow and copy the token. <br>
+                        You can fill a sample sketch_id and user_id fields, (they will be provided by Invision later)
+                    </small>
+                    <br>
+                    sketch_id: <input v-model="sketch_id" type="text" size="10">
+                    <br>
+                    user_id: <input v-model="user_id" type="text" size="10">
+                    <br>
+                    trello_token: <input v-model="trello_token" type="text" size="10">
+                    <br>
+                    <button @click="authorize_trello">Authorize Trello</button>
+                    <p>{{message_1}}</p>
+                </div>
+                <div v-else-if="page_num == 2">
+                    <button @click="get_organizations">Get Organizations</button>
+                    <table style="margin:auto;">
+                        <tr>
+                            <th>Organization Name</th>
+                            <th>Organization ID</th>
+                        </tr>
+                        <tr v-for="organization in organizations">
+                            <td>{{organization.name}}</td>
+                            <td>{{organization.id}}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div v-else-if="page_num == 3">
+                    Selected Organization: <input v-model="selected_organization" type="text" size="10" required>
+                    <button @click="get_organization_details">Get Organization Details</button>
+                    <pre>{{organization}}</pre>
+                </div>                    
+                <div v-else-if="page_num == 4">
+                    Selected Organization: <input v-model="selected_organization" type="text" size="10" required>
+                    <button @click="get_organization_boards">Get Organization Boards</button>
+                    <table style="margin:auto;">
+                        <tr>
+                            <th>Board Name</th>
+                            <th>Board ID</th>
+                        </tr>
+                        <tr v-for="board in boards">
+                            <td>{{board.name}}</td>
+                            <td>{{board.id}}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div v-else-if="page_num == 5">
+                    Select Active Board: <input v-model="selected_board" type="text" size="10" required>
+                    <button @click="select_board">Select Board</button>
+                    <p>{{message_2}}</p>
+                </div>  
+                <div v-else-if="page_num == 6">
+                    <button @click="get_board_lists">Get Board Lists</button>
+                    <table style="margin:auto;">
+                        <tr>
+                            <th>List Name</th>
+                            <th>List ID</th>
+                        </tr>
+                        <tr v-for="list in lists">
+                            <td>{{list.name}}</td>
+                            <td>{{list.id}}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div v-else-if="page_num == 7">
+                    <button @click="get_board_cards">Get Board Cards</button>
+                    <table style="margin:auto;">
+                        <tr>
+                            <th>Card Name</th>
+                            <th>Card ID</th>
+                        </tr>
+                        <tr v-for="card in cards">
+                            <td>{{card.name}}</td>
+                            <td>{{card.id}}</td>
+                        </tr>
+                    </table>
+                </div>  
+                <div v-else-if="page_num == 8">
+                    List(Col) id: <input v-model="list_id" type="text" size="10" required>
+                    <br>
+                    FH Text: <input v-model="fh_text" type="text" size="10" required>
+                    <br>
+                    <pre>
+                        {{message_3}}
+                    </pre>
+                    <button @click="create_card">Create Card</button>
+                </div>  
+                <div v-else-if="page_num == 9">
+                    Search card: <input v-model="search_text" type="text" size="10" required>
+                    <br>
+                    <button @click="search_cards">Search Cards</button>
+                    <table style="margin:auto;">
+                        <tr>
+                            <th>Card Name</th>
+                            <th>Card ID</th>
+                        </tr>
+                        <tr v-for="card in searched_cards">
+                            <td>{{card.name}}</td>
+                            <td>{{card.id}}</td>
+                        </tr>
+                    </table>
+                </div>  
+            </div>
+        </div>  
+        
+        <script>
+            var app = new Vue({
+                el: '#app',
+                data: () => ({
+                    page_num: 1,
+                    sketch_id: '',
+                    user_id: '',
+                    trello_token: '',
+                    message_1: '',
+                    message_2: '',
+                    message_3: '',
+                    organizations: [],
+                    organization: {},
+                    selected_organization: '',
+                    boards: [],
+                    selected_board: '',
+                    lists: [],
+                    cards: [],
+                    list_id: '',
+                    fh_text: '',
+                    search_text: '',
+                    searched_cards: [],
+                }),
+                mounted() {
+                    if(localStorage.getItem('sketch_id')) {
+                        this.sketch_id = localStorage.getItem('sketch_id');
+                    }
+                    else {
+                        this.sketch_id = 'sampleSketchId';
+                    }
+                    if(localStorage.getItem('user_id')) {
+                        this.user_id = localStorage.getItem('user_id');
+                    }
+                    else {
+                        this.user_id = 'sampleUserId';
+                    }
+                },
+                methods: {
+                    authorize_trello() {
+                        if(this.trello_token) {
+                            localStorage.setItem('sketch_id', this.sketch_id);
+                            localStorage.setItem('user_id', this.user_id);
+                            // if 200
+                            fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/callback?InvisionSketchIdentifier=' + this.sketch_id + '&InvisionUserIdentifier=' + this.user_id + '&Token=' + this.trello_token)
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log(data);
+                                if(data.message == "Registered Successfully") {
+                                    this.message_1 = 'Success!';
+                                }
+                                else {
+                                    this.message_1 = 'Error!';
+                                }
+                            })
+                            
+                        }
+                    },
+                    get_organizations() {
+                        // curl - X 'GET' \
+                        // 'https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/organizations?invisionUserId=sampleId&invisionSketchId=sampleId' \
+                        // -H 'accept: */*'
+                        fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/organizations?InvisionUserIdentifier=' + this.user_id + '&InvisionSketchIdentifier=' + this.sketch_id)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            this.organizations = data;
+                        })
+                    },
+                    get_organization_details(){
+                        fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/organization?InvisionUserIdentifier=' + this.user_id + '&InvisionSketchIdentifier=' + this.sketch_id + '&OrganizationId=' + this.selected_organization)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            this.organization = data;
+                        })
+                    },
+                    get_organization_boards(){
+                        fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/boards?invisionUserId=' + this.user_id + '&invisionSketchId=' + this.sketch_id + '&OrganizationId=' + this.selected_organization)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            this.boards = data;
+                        })
+                    },
+                    select_board(){
+                        fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/boards/select?invisionUserId=' + this.user_id + '&invisionSketchId=' + this.sketch_id, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                boardId: this.selected_board
+                            })
+                        }).then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            this.message_2 = data;
+                        })
+                    },
+                    get_board_lists(){
+                        fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/lists?invisionUserId=' + this.user_id + '&invisionSketchId=' + this.sketch_id)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            this.lists = data;
+                        })
+                    },
+                    get_board_cards(){
+                        fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/issues?invisionUserId=' + this.user_id + '&invisionSketchId=' + this.sketch_id)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            this.cards = data;
+                        })
+                    },
+                    create_card(){
+                        fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/issues?invisionUserId=' + this.user_id + '&invisionSketchId=' + this.sketch_id, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                listId: this.list_id,
+                                fhText: this.fh_text
+                            })
+                        }).then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            this.message_3 = data;
+                        })
+                    },
+                    search_cards(){
+                        fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/issues/search?invisionUserId=' + this.user_id + '&invisionSketchId=' + this.sketch_id + '&query=' + this.search_text).
+                        then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            this.searched_cards = data.cards;
+                        })
+                    }
+                }
+                
+            });
+
+        </script>
+    </body>
+</html>
