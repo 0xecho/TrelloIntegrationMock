@@ -129,6 +129,7 @@
                         </tr>
                     </table>
                 </div>  
+                {{ error }}
             </div>
         </div>  
         
@@ -154,6 +155,7 @@
                     fh_text: '',
                     search_text: '',
                     searched_cards: [],
+                    error: '',
                 }),
                 mounted() {
                     if(localStorage.getItem('sketch_id')) {
@@ -197,7 +199,14 @@
                         .then(response => response.json())
                         .then(data => {
                             console.log(data);
-                            this.organizations = data;
+                            try {
+                                if (data.status == "failed") {
+                                    this.error = "Failed to get organizations, maybe check your token and/or sketch id and user id";
+                                }
+                            }
+                            catch (err) {
+                                this.organizations = data;
+                            }
                         })
                     },
                     get_organization_details(){
@@ -205,7 +214,14 @@
                         .then(response => response.json())
                         .then(data => {
                             console.log(data);
-                            this.organization = data;
+                            try {
+                                if(data.status == "failed") {
+                                    this.error = "Failed to get organization details, maybe check your token and/or sketch id and user id";
+                                }
+                            }
+                            catch(err) {
+                                this.organization = data;
+                            }
                         })
                     },
                     get_organization_boards(){
@@ -213,7 +229,15 @@
                         .then(response => response.json())
                         .then(data => {
                             console.log(data);
-                            this.boards = data;
+                            // this.boards = data;
+                            try {
+                                if(data.status == "failed") {
+                                    this.error = "Failed to get organization boards, maybe check your token and/or sketch id and user id";
+                                }
+                            }
+                            catch(err) {
+                                this.boards = data;
+                            }
                         })
                     },
                     select_board(){
@@ -228,7 +252,15 @@
                         }).then(response => response.json())
                         .then(data => {
                             console.log(data);
-                            this.message_2 = data;
+                            // this.message_2 = data;
+                            try {
+                                if(data.status == "failed") {
+                                    this.error = "Failed to select board, maybe check your token and/or sketch id and user id";
+                                }
+                            }
+                            catch(err) {
+                                this.message_2 = data;
+                            }
                         })
                     },
                     get_board_lists(){
@@ -236,7 +268,15 @@
                         .then(response => response.json())
                         .then(data => {
                             console.log(data);
-                            this.lists = data;
+                            // this.lists = data;
+                            try {
+                                if(data.status == "failed") {
+                                    this.error = "Failed to get board lists, maybe check your token and/or sketch id and user id";
+                                }
+                            }
+                            catch(err) {
+                                this.lists = data;
+                            }
                         })
                     },
                     get_board_cards(){
@@ -244,7 +284,15 @@
                         .then(response => response.json())
                         .then(data => {
                             console.log(data);
-                            this.cards = data;
+                            // this.cards = data;
+                            try {
+                                if(data.status == "failed") {
+                                    this.error = "Failed to get board cards, maybe check your token and/or sketch id and user id";
+                                }
+                            }
+                            catch(err) {
+                                this.cards = data;
+                            }
                         })
                     },
                     create_card(){
@@ -260,7 +308,15 @@
                         }).then(response => response.json())
                         .then(data => {
                             console.log(data);
-                            this.message_3 = data;
+                            // this.message_3 = data;
+                            try {
+                                if(data.status == "failed") {
+                                    this.error = "Failed to create card, maybe check your token and/or sketch id and user id";
+                                }
+                            }
+                            catch(err) {
+                                this.message_3 = data;
+                            }
                         })
                     },
                     search_cards(){
@@ -268,7 +324,15 @@
                         then(response => response.json())
                         .then(data => {
                             console.log(data);
-                            this.searched_cards = data.cards;
+                            // this.searched_cards = data.cards;
+                            try {
+                                if(data.status == "failed") {
+                                    this.error = "Failed to search cards, maybe check your token and/or sketch id and user id";
+                                }
+                            }
+                            catch(err) {
+                                this.searched_cards = data.cards;
+                            }
                         })
                     }
                 }
