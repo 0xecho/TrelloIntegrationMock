@@ -8,6 +8,12 @@
     </head>
     <body>
         <div id="app">
+            <!-- right aligned active board -->
+            <p style="text-align: right;">
+                <small>
+                    Active Board: {{ active_board.name || 'Not selected yet' }}
+                </small>
+            </p>
             <div style="text-align:center;">
                 <!-- css centered header of 7 links -->
                 <div style="text-align:center;">
@@ -15,7 +21,7 @@
                     <a @click="page_num = 2" href="#">Get organizations</a> |
                     <a @click="page_num = 3" href="#">Organization Details</a> |
                     <a @click="page_num = 4" href="#">Organization Boards</a> |
-                    <a @click="page_num = 5" href="#">Select Board</a> |
+                    <a @click="page_num = 5" href="#">Select Active Board</a> |
                     <a @click="page_num = 6" href="#">Lists(Cols) on Active board</a> |
                     <a @click="page_num = 7" href="#">Cards on Active Board</a> |
                     <a @click="page_num = 8" href="#">Create Card (Issue)</a> |
@@ -162,6 +168,7 @@
                     search_text: '',
                     searched_cards: [],
                     error: '',
+                    active_board: '',
                 }),
                 mounted() {
                     if(localStorage.getItem('sketch_id')) {
@@ -177,7 +184,8 @@
                         this.user_id = 'sampleUserId';
                     }
 
-                    this.get_organizations();
+                    this.get_active_board()
+                    this.get_organizations()
 
                     setInterval(() => {
                         this.message_1 = "";
@@ -369,6 +377,26 @@
                             }
                             catch(err) {
                                 this.searched_cards = data.cards;
+                            }
+                        })
+                    },
+                    get_active_board(){
+                        // /boards/get-active
+                        fetch("https://portal.fl0.com/api/invision /DEV/Trello Integration/flows/boards/get-active?userId=" + this.user_id + "&sketchId=" + this.sketch_id)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            // this.active_board = data;
+                            try {
+                                if(data.status == "failed") {
+                                    this.error = "Failed to get active board, maybe check your token and/or sketch id and user id";
+                                }
+                                else {
+                                    this.active_board = data;
+                                }
+                            }
+                            catch(err) {
+                                this.active_board = data;
                             }
                         })
                     }
