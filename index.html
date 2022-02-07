@@ -46,7 +46,7 @@
                             <th>Organization ID</th>
                         </tr>
                         <tr v-for="organization in organizations">
-                            <td>{{organization.name}}</td>
+                            <td>{{organization.displayName}}</td>
                             <td>{{organization.id}}</td>
                         </tr>
                     </table>
@@ -57,7 +57,12 @@
                     <pre>{{organization}}</pre>
                 </div>                    
                 <div v-else-if="page_num == 4">
-                    Selected Organization: <input v-model="selected_organization" type="text" size="10" required>
+                    Selected Organization: 
+                    <!-- select organization  -->
+                    <select v-model="selected_organization">
+                        <option v-for="organization in organizations" :value="organization.id">{{organization.displayName}}</option>
+                    </select>
+                    <!-- <input v-model="selected_organization" type="text" size="10" required> -->
                     <button @click="get_organization_boards">Get Organization Boards</button>
                     <table style="margin:auto;">
                         <tr>
@@ -73,6 +78,7 @@
                 <div v-else-if="page_num == 5">
                     Board ID: <input v-model="selected_board" type="text" size="10" required>
                     <button @click="select_board">Select Active Board</button>
+                    <br>
                     <small>
                         needed to automatically get the board lists, board cards, and create a card 
                     </small>
@@ -170,14 +176,21 @@
                     else {
                         this.user_id = 'sampleUserId';
                     }
+
+                    this.get_organizations();
+
+                    setInterval(() => {
+                        this.message_1 = "";
+                        this.message_2 = "";
+                        this.message_3 = "";
+                    }, 5000);
                 },
                 methods: {
                     authorize_trello() {
                         if(this.trello_token) {
                             localStorage.setItem('sketch_id', this.sketch_id);
                             localStorage.setItem('user_id', this.user_id);
-                            // if 200
-                            fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/callback?InvisionSketchIdentifier=' + this.sketch_id + '&InvisionUserIdentifier=' + this.user_id + '&Token=' + this.trello_token)
+                            fetch("https://api.fl0.com/invision%20/dev/trello%20integration/flows/callback?sketchId=" + this.sketch_id + "&userId=" + this.user_id + "&token=" + this.trello_token)
                             .then(response => response.json())
                             .then(data => {
                                 console.log(data);
@@ -195,13 +208,16 @@
                         // curl - X 'GET' \
                         // 'https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/organizations?invisionUserId=sampleId&invisionSketchId=sampleId' \
                         // -H 'accept: */*'
-                        fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/organizations?invisionUserId=' + this.user_id + '&invisionSketchId=' + this.sketch_id)
+                        fetch("https://portal.fl0.com/api/invision /DEV/Trello Integration/flows/organizations?userId=" + this.user_id + "&sketchId=" + this.sketch_id)
                         .then(response => response.json())
                         .then(data => {
                             console.log(data);
                             try {
                                 if (data.status == "failed") {
                                     this.error = "Failed to get organizations, maybe check your token and/or sketch id and user id";
+                                }
+                                else {
+                                    this.organizations = data;
                                 }
                             }
                             catch (err) {
@@ -210,13 +226,16 @@
                         })
                     },
                     get_organization_details(){
-                        fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/organization?invisionUserId=' + this.user_id + '&invisionSketchId=' + this.sketch_id + '&OrganizationId=' + this.selected_organization)
+                        fetch("https://portal.fl0.com/api/invision /DEV/Trello Integration/flows/organization?userId=" + this.user_id + "&sketchId=" + this.sketch_id + "&organizationId=" + this.selected_organization)
                         .then(response => response.json())
                         .then(data => {
                             console.log(data);
                             try {
                                 if(data.status == "failed") {
                                     this.error = "Failed to get organization details, maybe check your token and/or sketch id and user id";
+                                }
+                                else {
+                                    this.organization = data;
                                 }
                             }
                             catch(err) {
@@ -225,7 +244,7 @@
                         })
                     },
                     get_organization_boards(){
-                        fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/boards?invisionUserId=' + this.user_id + '&invisionSketchId=' + this.sketch_id + '&OrganizationId=' + this.selected_organization)
+                        fetch("https://portal.fl0.com/api/invision /DEV/Trello Integration/flows/boards?userId=" + this.user_id + "&sketchId=" + this.sketch_id + "&organizationId=" + this.selected_organization)
                         .then(response => response.json())
                         .then(data => {
                             console.log(data);
@@ -234,6 +253,9 @@
                                 if(data.status == "failed") {
                                     this.error = "Failed to get organization boards, maybe check your token and/or sketch id and user id";
                                 }
+                                else {
+                                    this.boards = data;
+                                }
                             }
                             catch(err) {
                                 this.boards = data;
@@ -241,7 +263,7 @@
                         })
                     },
                     select_board(){
-                        fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/boards/select?invisionUserId=' + this.user_id + '&invisionSketchId=' + this.sketch_id, {
+                        fetch("https://portal.fl0.com/api/invision /DEV/Trello Integration/flows/boards/select?userId=" + this.user_id + "&sketchId=" + this.sketch_id, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -249,13 +271,17 @@
                             body: JSON.stringify({
                                 boardId: this.selected_board
                             })
-                        }).then(response => response.json())
+                        })
+                        .then(response => response.json())
                         .then(data => {
                             console.log(data);
                             // this.message_2 = data;
                             try {
                                 if(data.status == "failed") {
                                     this.error = "Failed to select board, maybe check your token and/or sketch id and user id";
+                                }
+                                else{
+                                    this.message_2 = data;
                                 }
                             }
                             catch(err) {
@@ -264,7 +290,7 @@
                         })
                     },
                     get_board_lists(){
-                        fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/lists?invisionUserId=' + this.user_id + '&invisionSketchId=' + this.sketch_id)
+                        fetch("https://portal.fl0.com/api/invision /DEV/Trello Integration/flows/lists?userId=" + this.user_id + "&sketchId=" + this.sketch_id + "&organizationId=" + this.selected_organization)
                         .then(response => response.json())
                         .then(data => {
                             console.log(data);
@@ -273,6 +299,9 @@
                                 if(data.status == "failed") {
                                     this.error = "Failed to get board lists, maybe check your token and/or sketch id and user id";
                                 }
+                                else {
+                                    this.lists = data;
+                                }
                             }
                             catch(err) {
                                 this.lists = data;
@@ -280,7 +309,7 @@
                         })
                     },
                     get_board_cards(){
-                        fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/issues?invisionUserId=' + this.user_id + '&invisionSketchId=' + this.sketch_id)
+                        fetch("https://portal.fl0.com/api/invision /DEV/Trello Integration/flows/issues?userId=" + this.user_id + "&sketchId=" + this.sketch_id)
                         .then(response => response.json())
                         .then(data => {
                             console.log(data);
@@ -288,6 +317,8 @@
                             try {
                                 if(data.status == "failed") {
                                     this.error = "Failed to get board cards, maybe check your token and/or sketch id and user id";
+                                } else {
+                                    this.cards = data;
                                 }
                             }
                             catch(err) {
@@ -296,7 +327,7 @@
                         })
                     },
                     create_card(){
-                        fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/issues?invisionUserId=' + this.user_id + '&invisionSketchId=' + this.sketch_id, {
+                        fetch('https://portal.fl0.com/api/invision /DEV/Trello Integration/flows/issue?userId=' + this.user_id + '&sketchId=' + this.sketch_id, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -313,6 +344,9 @@
                                 if(data.status == "failed") {
                                     this.error = "Failed to create card, maybe check your token and/or sketch id and user id";
                                 }
+                                else {
+                                    this.message_3 = data;
+                                }
                             }
                             catch(err) {
                                 this.message_3 = data;
@@ -328,6 +362,9 @@
                             try {
                                 if(data.status == "failed") {
                                     this.error = "Failed to search cards, maybe check your token and/or sketch id and user id";
+                                }
+                                else {
+                                    this.searched_cards = data.cards;
                                 }
                             }
                             catch(err) {
