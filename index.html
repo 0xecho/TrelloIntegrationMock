@@ -193,7 +193,7 @@
                         // curl - X 'GET' \
                         // 'https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/organizations?invisionUserId=sampleId&invisionSketchId=sampleId' \
                         // -H 'accept: */*'
-                        fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/organizations?InvisionUserIdentifier=' + this.user_id + '&InvisionSketchIdentifier=' + this.sketch_id)
+                        fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/organizations?invisionUserId=' + this.user_id + '&invisionSketchId=' + this.sketch_id)
                         .then(response => response.json())
                         .then(data => {
                             console.log(data);
@@ -201,7 +201,7 @@
                         })
                     },
                     get_organization_details(){
-                        fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/organization?InvisionUserIdentifier=' + this.user_id + '&InvisionSketchIdentifier=' + this.sketch_id + '&OrganizationId=' + this.selected_organization)
+                        fetch('https://api.fl0.com/invision%20/dev/trellointegrationdraft/flows/organization?invisionUserId=' + this.user_id + '&invisionSketchId=' + this.sketch_id + '&OrganizationId=' + this.selected_organization)
                         .then(response => response.json())
                         .then(data => {
                             console.log(data);
